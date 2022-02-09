@@ -35,6 +35,9 @@ variable "trigcount" {
   type = string
 }
 
+variable "root_password" {
+  type = string
+}
 
 # Configure the VMware vSphere Provider
 provider "vsphere" {
@@ -138,7 +141,7 @@ resource "null_resource" "vm_node_init" {
     connection {
       type = "ssh"
       host = "${vsphere_virtual_machine.vm_deploy.default_ip_address}"
-      user = "root"
+      user = "auslab"
       password = "${local.root_password}"
       port = "22"
       agent = false
@@ -147,13 +150,13 @@ resource "null_resource" "vm_node_init" {
 
   provisioner "remote-exec" {
     inline = [
-        "chmod +x /tmp/gentraffic.sh",
-        "/tmp/gentraffic.sh ${local.appvmip} ${local.appport}"
+        "sudo chmod +x /tmp/gentraffic.sh",
+        "sudo /tmp/gentraffic.sh ${local.appvmip} ${local.appport}"
     ]
     connection {
       type = "ssh"
       host = "${vsphere_virtual_machine.vm_deploy.default_ip_address}" 
-      user = "root"
+      user = "auslab"
       password = "${local.root_password}"
       port = "22"
       agent = false
@@ -169,7 +172,8 @@ locals {
   vsphere_user = yamldecode(data.terraform_remote_state.global.outputs.vsphere_user)
   vsphere_password = yamldecode(data.terraform_remote_state.global.outputs.vsphere_password)
   vsphere_server = yamldecode(data.terraform_remote_state.global.outputs.vsphere_server)
-  root_password = yamldecode(data.terraform_remote_state.global.outputs.root_password)
+  #root_password = yamldecode(data.terraform_remote_state.global.outputs.root_password)
+  root_password = var.root_password
   datacenter = yamldecode(data.terraform_remote_state.global.outputs.datacenter)
   datastore_name = yamldecode(data.terraform_remote_state.global.outputs.datastore_name)
   resource_pool = yamldecode(data.terraform_remote_state.global.outputs.resource_pool)
